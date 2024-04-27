@@ -15,10 +15,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('healthcare_professional_id')->constrained('healthcare_professionals');
-            $table->dateTime('start_time')->index();
-            $table->dateTime('end_time')->index();
-            $table->enum('status', ['booked', 'completed', 'cancelled']);
+            $table->date('date')->index();
+            $table->time('start_time')->index();
+            $table->time('end_time')->index();
+            $table->enum('status', ['booked', 'completed', 'cancelled'])->default('booked');
             $table->timestamps();
+
+            $table->unique(['healthcare_professional_id', 'date', 'start_time'], 'unique_healthcare_appointment');
         });
     }
 
