@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
+use App\Models\Appointment;
 use Carbon\Carbon;
 use Tests\TestCase;
 use App\Models\HealthcareProfessional;
@@ -190,5 +191,97 @@ class BookingControllerTest extends TestCase
         $this->withHeader('Authorization', $token)
             ->postJson(route('appointment.book'), $slot2)
             ->assertStatus(201);
+    }
+
+    public function test_can_cancel_an_appointment()
+    {
+        $this->seed();
+        $token = $this->getValidLoginToken();
+
+        $booking_date = Carbon::now()->addDays(2);
+        $appointment = Appointment::factory()->create([
+            'user_id' => auth()->id(),
+            'date' => Carbon::parse($booking_date)->format('Y-m-d'),
+            'start_time' => Carbon::parse($booking_date)->format('H:i:s'),
+            'end_time' => Carbon::parse($booking_date)->addMinutes((int)config('app.booking_time_slot'))->format('H:i:s'),
+            'status' => 'booked'
+        ]);
+
+        $this->withHeader('Authorization', $token)
+            ->postJson(route('cancel.appointment'), [
+                'appointment_id' => $appointment->id
+            ])
+            ->assertStatus(200);
+
+        $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'cancelled']);
+    }
+
+    public function test_cannot_cancel_appointment_within_24_hours_of_schedule_time()
+    {
+        $this->seed();
+        $token = $this->getValidLoginToken();
+
+        $booking_date = Carbon::now()->addHours(20);
+        $appointment = Appointment::factory()->create([
+            'user_id' => auth()->id(),
+            'date' => Carbon::parse($booking_date)->format('Y-m-d'),
+            'start_time' => Carbon::parse($booking_date)->format('H:i:s'),
+            'end_time' => Carbon::parse($booking_date)->addMinutes((int)config('app.booking_time_slot'))->format('H:i:s'),
+            'status' => 'booked'
+        ]);
+
+        $this->withHeader('Authorization', $token)
+            ->postJson(route('cancel.appointment'), [
+                'appointment_id' => $appointment->id
+            ])
+            ->assertStatus(400);
+
+        $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'booked']);
+    }
+
+    public function test_can_mark_past_appointment_as_complete()
+    {
+        $this->seed();
+        $token = $this->getValidLoginToken();
+
+        $booking_date = Carbon::now()->subDay();
+        $appointment = Appointment::factory()->create([
+            'user_id' => auth()->id(),
+            'date' => Carbon::parse($booking_date)->format('Y-m-d'),
+            'start_time' => Carbon::parse($booking_date)->format('H:i:s'),
+            'end_time' => Carbon::parse($booking_date)->addMinutes((int)config('app.booking_time_slot'))->format('H:i:s'),
+            'status' => 'booked'
+        ]);
+
+        $this->withHeader('Authorization', $token)
+            ->postJson(route('complete.appointment'), [
+                'appointment_id' => $appointment->id
+            ])
+            ->assertStatus(200);
+
+        $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'completed']);
+    }
+
+    public function test_cannot_mark_future_appointment_as_complete()
+    {
+        $this->seed();
+        $token = $this->getValidLoginToken();
+
+        $booking_date = Carbon::now()->addDay();
+        $appointment = Appointment::factory()->create([
+            'user_id' => auth()->id(),
+            'date' => Carbon::parse($booking_date)->format('Y-m-d'),
+            'start_time' => Carbon::parse($booking_date)->format('H:i:s'),
+            'end_time' => Carbon::parse($booking_date)->addMinutes((int)config('app.booking_time_slot'))->format('H:i:s'),
+            'status' => 'booked'
+        ]);
+
+        $this->withHeader('Authorization', $token)
+            ->postJson(route('cancel.appointment'), [
+                'appointment_id' => $appointment->id
+            ])
+            ->assertStatus(400);
+
+        $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'booked']);
     }
 }

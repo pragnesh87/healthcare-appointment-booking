@@ -19,8 +19,8 @@ class Appointment extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function heathcareProfessional(): BelongsTo
+    public function healthcareProfessional()
     {
-        return $this->belongsTo(HealthcareProfessional::class);
+        return $this->hasOne(HealthcareProfessional::class, 'id', 'healthcare_professional_id');
     }
 }

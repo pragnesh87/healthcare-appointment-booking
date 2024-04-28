@@ -15,8 +15,8 @@ class HealthcareProfessional extends Model
         'specialty'
     ];
 
-    public function appointments(): HasMany
+    public function appointment()
     {
-        return $this->hasMany(Appointment::class);
+        return $this->belongsTo(Appointment::class, 'healthcare_professional_id');
     }
 }

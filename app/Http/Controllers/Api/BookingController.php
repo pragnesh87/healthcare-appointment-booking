@@ -57,4 +57,54 @@ class BookingController extends Controller
             ->whereRaw("('" . $data['start_time'] . "' between `start_time` and `end_time` OR '" . $data['end_time'] . "' between `start_time` and `end_time`)")
             ->exists();
     }
+
+    public function cancelAppointment(Request $request)
+    {
+        $request->validate(['appointment_id' => ['required']]);
+        $appointment = Appointment::where('id', $request->appointment_id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if ($appointment && $this->canCancelAppointment($appointment)) {
+            $appointment->update(['status' => 'cancelled']);
+            return sendSuccess([], 'Appointment Cancelled');
+        }
+        return sendError('Can not cancel appointment', status: 400);
+    }
+
+    private function canCancelAppointment($appointment)
+    {
+        $current_time = Carbon::now();
+        $booking_time = Carbon::parse($appointment->date . " " . $appointment->start_time);
+        $diff = (int)$current_time->diffInHours($booking_time);
+
+        if ($diff < (int)config('app.booking_cancellable_hours')) {
+            return false;
+        }
+        return true;
+    }
+
+    public function completeAppointment(Request $request)
+    {
+        $request->validate(['appointment_id' => ['required']]);
+        $appointment = Appointment::where('id', $request->appointment_id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if ($appointment && $this->canCompleteAppointment($appointment)) {
+            $appointment->update(['status' => 'completed']);
+            return sendSuccess([], 'Appointment marked as complete.');
+        }
+        return sendError('Can not update appointment', status: 400);
+    }
+
+    private function canCompleteAppointment($appointment)
+    {
+        $current_time = Carbon::now();
+        $booking_time = Carbon::parse($appointment->date . " " . $appointment->start_time);
+        if ($current_time->gt($booking_time)) {
+            return true;
+        }
+        return false;
+    }
 }

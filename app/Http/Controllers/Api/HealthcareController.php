@@ -14,7 +14,7 @@ class HealthcareController extends Controller
     public function index()
     {
         $healthcares = HealthcareProfessional::select(['name', 'specialty'])
-            ->get()
+            ->paginate()
             ->toArray();
         return sendSuccess($healthcares);
     }
