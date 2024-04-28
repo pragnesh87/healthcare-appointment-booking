@@ -20,8 +20,6 @@ return new class extends Migration
             $table->time('end_time')->index();
             $table->enum('status', ['booked', 'completed', 'cancelled'])->default('booked');
             $table->timestamps();
-
-            $table->unique(['healthcare_professional_id', 'date', 'start_time'], 'unique_healthcare_appointment');
         });
     }
 
