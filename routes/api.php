@@ -15,7 +15,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('healthcares', HealthcareController::class);
+    Route::get('healthcares', [HealthcareController::class, 'index'])->name('healthcares.index');
     Route::post('book-appointment', [BookingController::class, 'book'])->name('appointment.book');
     Route::get('user-appointments', [UserController::class, 'appointments'])->name('user.appointment');
     Route::post('cancel-appointment', [BookingController::class, 'cancelAppointment'])->name('cancel.appointment');
