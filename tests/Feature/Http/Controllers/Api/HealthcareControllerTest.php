@@ -17,37 +17,18 @@ class HealthcareControllerTest extends TestCase
         $this->getJson(route('healthcares.index'))
             ->assertStatus(401);
     }
-    public function test_user_cannot_see_healthcarelist_without_valid_token(): void
+    public function test_user_cannot_see_healthcarelist_with_invalid_token(): void
     {
-        $this->getJson(route('healthcares.index'))
-            ->assertStatus(401);
-
-        $user = User::factory()->create([
-            'password' => Hash::make($password = 'secret-password'),
-        ]);
-
-        $loginResponse = $this->postJson('/api/login', [
-            'email' => $user->email,
-            'password' => $password,
-        ])->assertStatus(200);
-
-        $this->withHeader('Authorization', $loginResponse['data']['token_type'] . 'some-random-token')
+        $this->withHeader('Authorization', 'Bearer some-random-token')
             ->getJson(route('healthcares.index'))
-            ->assertStatus(200);
+            ->assertStatus(401);
     }
 
     public function test_user_can_see_healthcarelist_with_valid_token()
     {
-        $user = User::factory()->create([
-            'password' => Hash::make($password = 'secret-password'),
-        ]);
+        $token = $this->getValidLoginToken();
 
-        $loginResponse = $this->postJson('/api/login', [
-            'email' => $user->email,
-            'password' => $password,
-        ])->assertStatus(200);
-
-        $this->withHeader('Authorization', $loginResponse['data']['token_type'] . $loginResponse['data']['access_token'])
+        $this->withHeader('Authorization', $token)
             ->getJson(route('healthcares.index'))
             ->assertStatus(200);
     }
