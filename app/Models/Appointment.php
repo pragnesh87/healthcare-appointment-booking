@@ -11,7 +11,7 @@ class Appointment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'healthcare_professional_id', 'start_time', 'end_time', 'status'
+        'user_id', 'healthcare_professional_id', 'date', 'start_time', 'end_time', 'status'
     ];
 
     public function user(): BelongsTo

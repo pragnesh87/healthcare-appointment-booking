@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\FutureBookingDateTime;
 use Illuminate\Foundation\Http\FormRequest;
 
 class BookingRequest extends FormRequest
@@ -24,8 +25,7 @@ class BookingRequest extends FormRequest
         return [
             'healthcare_professional_id' => ['required'],
             'date' => ['required', 'date_format:Y-m-d', 'after:yesterday'],
-            'start_time' => ['required', 'date_format:H:i:s'],
-            'end_time' => ['required', 'date_format:H:i:s', 'after:start_time']
+            'start_time' => ['required', 'date_format:H:i:s', new FutureBookingDateTime(config('app.booking_buffer_time_in_minute'))],
         ];
     }
 }

@@ -123,4 +123,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'booking_time_slot' => env('BOOKING_TIME_SLOT', 30),
+    'booking_buffer_time_in_minute' => env('BOOKING_BUFFER_TIME_IN_MIN', 0)
+
 ];
