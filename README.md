@@ -8,16 +8,16 @@ git clone git@github.com:pragnesh87/healthcare-appointment-booking.git
 
 -   rename .env.example to .env
 
-Run command
-
-```
-php artisan key:generate
-```
-
 install dependencies
 
 ```
 composer install
+```
+
+Run command
+
+```
+php artisan key:generate
 ```
 
 Run Migration
